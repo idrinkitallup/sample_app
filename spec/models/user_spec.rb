@@ -180,25 +180,29 @@ describe User do
     it "should destroy associated microposts" do
       @user.destroy
       [@mp1, @mp2].each do |micropost|
-        Micropost.find_by_id(micropost.id).should be_nil
+        lambda do
+          Micropost.find(micropost)
+        end.should raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+    
+    describe "status feed" do
+      
+      it "should have a feed" do
+        @user.should respond_to(:feed)
+      end
+      
+      it "should include the users microposts" do
+        @user.feed.should include(@mp1)
+        @user.feed.should include(@mp2)
+      end
+      
+      it "should not include different users microposts" do
+        mp3 = Factory(:micropost, 
+                      :user => Factory(:user, :email => Factory.next(:email)))
+        @user.feed.should_not include(@mp3)
       end
     end
   end
-  
 end
-
-
-# == Schema Information
-#
-# Table name: users
-#
-#  id                 :integer         not null, primary key
-#  name               :string(255)
-#  email              :string(255)
-#  created_at         :datetime
-#  updated_at         :datetime
-#  encrypted_password :string(255)
-#  salt               :string(255)
-#  admin              :boolean         default(FALSE)
-#
 

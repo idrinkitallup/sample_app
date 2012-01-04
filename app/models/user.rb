@@ -36,6 +36,10 @@ class User < ActiveRecord::Base
     encrypted_password == encrypt(submitted_password)
   end
   
+  def feed
+    Micropost.where("user_id = ?", id)
+  end
+  
   def self.authenticate(email, submitted_password)
     user = find_by_email(email)
     (user && user.has_password?(submitted_password)) ? user : nil
@@ -67,19 +71,4 @@ class User < ActiveRecord::Base
 
   
 end
-
-
-# == Schema Information
-#
-# Table name: users
-#
-#  id                 :integer         not null, primary key
-#  name               :string(255)
-#  email              :string(255)
-#  created_at         :datetime
-#  updated_at         :datetime
-#  encrypted_password :string(255)
-#  salt               :string(255)
-#  admin              :boolean         default(FALSE)
-#
 
