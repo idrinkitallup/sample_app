@@ -161,20 +161,48 @@ describe User do
     end
   end
   
+  describe "micropost associations" do
+    
+    before(:each) do
+      @user = User.create(@attr)
+      @mp1 = Factory(:micropost, :user => @user, :created_at => 1.day.ago)
+      @mp2 = Factory(:micropost, :user => @user, :created_at => 1.hour.ago)
+    end
+    
+    it "should have a microposts attribute" do
+      @user.should respond_to(:microposts)
+    end
+    
+    it "should have the righ microposts in the right order" do
+      @user.microposts.should == [@mp2, @mp1]
+    end
+    
+    it "should destroy associated microposts" do
+      @user.destroy
+      [@mp1, @mp2].each do |micropost|
+        lambda do
+          Micropost.find(micropost)
+        end.should raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+    
+    describe "status feed" do
+      
+      it "should have a feed" do
+        @user.should respond_to(:feed)
+      end
+      
+      it "should include the users microposts" do
+        @user.feed.should include(@mp1)
+        @user.feed.should include(@mp2)
+      end
+      
+      it "should not include different users microposts" do
+        mp3 = Factory(:micropost, 
+                      :user => Factory(:user, :email => Factory.next(:email)))
+        @user.feed.should_not include(@mp3)
+      end
+    end
+  end
 end
-
-
-# == Schema Information
-#
-# Table name: users
-#
-#  id                 :integer         not null, primary key
-#  name               :string(255)
-#  email              :string(255)
-#  created_at         :datetime
-#  updated_at         :datetime
-#  encrypted_password :string(255)
-#  salt               :string(255)
-#  admin              :boolean         default(FALSE)
-#
 
