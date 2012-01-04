@@ -57,11 +57,11 @@ describe UsersController do
                                            :content => "delete")
       end
       
-      it "should no have delete links for non admins" do
+      it "should not have delete links for non admins" do
         other_user = User.all.second
         get :index
         response.should_not have_selector('a', :href => user_path(other_user),
-                                           :content => "delete")
+                                               :content => "delete")
       end
       
     end
